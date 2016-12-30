@@ -1,0 +1,14 @@
+components/
+cover_db/
+Build
+.last_cover_stats
+Makefile.old
+META.yml
+MYMETA.yml
+nytprof.out
+.DS_Store
+*.swp
+test-*
+old-*
+wip-*
+log/*.log

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec plackup -E development -R ./Kelp -R ./conf

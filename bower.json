@@ -1,0 +1,17 @@
+{
+  "name": "logbook",
+  "homepage": "https://github.com/senfomat/logbook",
+  "authors": [
+    "Christian Froemmel <christian.froemmel@charite.de>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "moment": "^2.17.1",
+    "vue": "^2.1.8",
+    "vue-resource": "^1.0.3"
+  }
+}
