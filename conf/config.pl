@@ -64,6 +64,7 @@
 		},
 	},
 	appconfig => {
-		title	=> 'Charité Abt. Netzwerk Logbuch',
+		title	=> 'Logbuch',
+		company	=> 'Charité Abt. Netzwerk',
 	},
 };

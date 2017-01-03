@@ -29,4 +29,7 @@
 			force => 1
 		}
 	},
+	appconfig => {
+		devel	=> 1,
+	},
 };
