@@ -45,7 +45,7 @@ sub GETlogentries {
 		$cat_stmt->execute($tmpHash->{ 'entry_id' });
 
 		while(my ($category_id) = $cat_stmt->fetchrow_array) {
-			$tmpHash->{ 'categories' }{ $category_id } = 1;
+			push @{ $tmpHash->{ 'categories' } }, $category_id;
 		}
 
 		$cat_stmt->finish();
