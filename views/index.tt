@@ -2,92 +2,112 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>[% appconfig.title %]</title>
+	<title>[% appconfig.title %] - [% appconfig.company %]</title>
 	<link rel="stylesheet" href="components/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="components/alertify-js/build/css/alertify.min.css">
+	<link rel="stylesheet" href="static/logbook.css">
 </head>
 <body>
 	<main>
-		<div class="container">
+		<div class="container-fluid">
 			<h1>[% appconfig.title %]</h1>
+			<h2>[% appconfig.company %]</h2>
 			<div id="v-app">
 				<p class="lead">
-					<button @click="createlogentry()" class="btn btn-primary">Neuer Eintrag</button>
+					<button @click="createlogentry()" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>
 				</p>
 				<table class="table table-bordered table-condensed table-hover table-striped">
 					<tr>
 						<th>Datum</th>
-						<th>Title</th>
-						<th>Description</th>
-						<th>Author</th>
+						<th>Eintrag</th>
+						<th>Autor</th>
 						<th>Kategorien</th>
 						<th></th>
 					</tr>
-					<tr v-for="logentry in logentries" is="logentry" :logentry="logentry" :categories="categories"></tr>
+					<tr v-for="logentry in logentries" is="logentry"
+							:logentry="logentry"
+							:categories="categories"
+							:categorygroups="categorygroups"
+						></tr>
 				</table>
-				<pre>{{ $data }}</pre>
+				[% IF appconfig.devel %]<pre>{{ $data }}</pre> [% END %]
 			</div>
 		</div>
 	</main>
 
 	<template id="template-logentry-raw">
 		<tr>
-			<td class="col-md-1">
-				<span v-if="!logentry.editing" :title="logentry.edate | formatDatetimeFull">{{logentry.edate | formatDatetimeShort }}
+			<td class="col-md-2">
+				<span v-if="!logentry.editing" :title="logentry.edate | formatDatetimeFull">
+					{{logentry.edate | formatDateShort }}<br />
+					{{logentry.edate | formatTimeShort }} Uhr
 					</span>
 				<span v-else>
 					<input type="text" v-model="logentry.edate" class="form-control">
 						</input>
 				</span>
 			</td>
+			<td class="col-md-4">
+				<div v-if="logentry.editing" class="form-group">
+					<input v-model="logentry.title" class="form-control" id="inputTitle"></input>
+					<div class="inputDescDiv">
+						<label for="inputTextareaDesc">Beschreibung (optional)</label>
+						<textarea v-if="logentry.editing" v-model="logentry.description" id="inputTextareaDesc" class="form-control" rows="10"></textarea>
+					</div>
+				</div>
+				<span v-else>
+					<div>{{logentry.title}}</div>
+					<div class="description" v-if="logentry.description">
+						{{logentry.description}}
+					</div>
+				</span>
+			</td>
 			<td class="col-md-2">
-				<input v-if="logentry.editing" v-model="logentry.title" class="form-control">
-					</input>
-				<span v-else>
-					{{logentry.title}}
-				</span>
-			</td>
-			<td class="col-md-3">
-				<textarea v-if="logentry.editing" v-model="logentry.description" class="form-control">
-					</textarea>
-				<span v-else>
-					{{logentry.description}}
-				</span>
-			</td>
-			<td class="col-md-1">
 				<input v-if="logentry.editing" v-model="logentry.author" class="form-control">
 					</input>
 				<span v-else>
 					{{logentry.author}}
 				</span>
 			</td>
-			<td class="col-md-1">
+			<td class="col-md-3">
 				<span v-if="!logentry.editing">
-					<span v-for="(undef, category_id) in logentry.categories">
-						<button class="btn btn-default btn-xs">{{ getCategory(category_id).title }}</button>
-					</span>
+					<button v-for="category_id in logentry.categories" class="btn btn-default btn-xs">{{ getCategory(category_id).title }}</button>
 				</span>
-				<span v-else>
-					<ul>
-						<li v-for="category in categories">
-							<button @click="toggleCategory(logentry, category)" :bind="logentry" class="btn btn-default btn-xs" :title="category.description">{{category.title}}</button>
-						</li>
-					</span>
-				</span>
+				<table v-else class="table table-condensed">
+					<tr v-for="(groupcategories, cgroup) in categorygroups">
+						<td>{{ cgroup }}</td>
+						<td>
+							<label v-for="category in groupcategories" class="btn btn-default btn-xs" :title="category.description">
+								<input type="checkbox" v-model="logentry.categories" :value="category.category_id"> {{category.title}}</input>
+							</label>
+						</td>
+					</tr>
+				</table>
 			</td>
 			<td class="col-md-1">
-				<div class="btn-group" v-if="logentry.editing">
-					<span v-if="logentry.entry_id">
-						<button @click="updatelogentry(logentry)" class="btn btn-primary btn-xs">Update logentry</button>
-						<button @click="deletelogentry(logentry)" class="btn btn-danger btn-xs">Delete</button>
+				<div v-if="logentry.editing">
+					<span v-if="logentry.entry_id" class="btn-group-vertical">
+						<button @click="updatelogentry(logentry)" class="btn btn-success btn-sm">
+							<span class="glyphicon glyphicon-floppy-disk pull-left"></span> Speichern
+						</button>
+						<button @click="deletelogentry(logentry)" class="btn btn-danger btn-sm">
+							<span class="glyphicon glyphicon-trash pull-left"></span> Löschen
+						</button>
+						<button @click="cancelEditNewlogentry(logentry)" class="btn btn-default btn-sm">
+							<span class="glyphicon glyphicon-minus pull-left"></span> Abbrechen
+						</button>
 					</span>
-					<span v-else>
-						<button @click="storelogentry(logentry)" class="btn btn-success btn-xs">Save New logentry</button>
+					<span v-else class="btn-group-vertical">
+						<button @click="createlogentry(logentry)" class="btn btn-success btn-sm">
+							<span class="glyphicon glyphicon-floppy-disk pull-left"></span> Speichern
+						</button>
+						<button @click="cancelEditNewlogentry(logentry)" class="btn btn-default btn-sm">
+							<span class="glyphicon glyphicon-minus pull-left"></span> Abbrechen
+						</button>
 					</span>
-
-					<button @click="cancelEditNewlogentry(logentry)" class="btn btn-default btn-xs">Cancel</button>
 				</div>
 				<div class="btn-group" v-else>
-					<button @click="editlogentry(logentry)" class="btn btn-default btn-sm glyphicon glyphicon-pencil" title="Edit"></button>
+					<button @click="editlogentry(logentry)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-edit"></span></button>
 				</div>
 			</td>
 		</tr>

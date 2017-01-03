@@ -7,33 +7,46 @@
 
 	Vue.component('logentry', {
 		template: '#template-logentry-raw',
-		props: ['logentry', 'categories'],
+		props: [
+			'logentry',
+			'categories',
+			'categorygroups'
+		],
 		methods: {
 			deletelogentry: function(logentry) {
-				var index = this.$parent.logentries.indexOf(logentry);
-				this.$parent.logentries.splice(index, 1);
-				this.$http.delete('/logentry/' + logentry.id);
+				var that = this;
+				alertify.confirm('Löschen?', 'Diesen Eintrag wirklich löschen?',
+						function() {
+								var index = that.$parent.logentries.indexOf(logentry);
+								that.$parent.logentries.splice(index, 1);
+								that.$http.delete('/logentry/' + logentry.entry_id);
+								alertify.success('Eintrag gelöscht');
+						},
+						function() {
+							logentry.editing = false;
+						}
+					);
 			},
 			editlogentry: function(logentry) {
 				logentry.editing = true;
 			},
-			updatelogentry: function(logentry) {
-				this.$http.patch('/logentry/' + logentry.id, logentry);
-				// Set editing to false to show actions again and hide the inputs
-				logentry.editing = false;
-			},
-			storelogentry: function(logentry) {
+			createlogentry: function(logentry) {
 				this.$http.post('logentry', logentry).then(function (response) {
 					/*
 						After the the new logentry is stored in the database fetch again all logentries with
 						vm.fetchlogentries();
 						Or Better, update the id of the created logentry
 					*/
-					Vue.set(logentry, 'entry_id', response.data.id);
+					Vue.set(logentry, 'entry_id', response.data.entry_id);
 
 					//Set editing to false to show actions again and hide the inputs
 					logentry.editing = false;
 				});
+			},
+			updatelogentry: function(logentry) {
+				this.$http.put('/logentry/' + logentry.entry_id, logentry);
+				// Set editing to false to show actions again and hide the inputs
+				logentry.editing = false;
 			},
 			cancelEditNewlogentry: function(logentry) {
 				if (logentry.entry_id) {
@@ -46,22 +59,14 @@
 			},
 			getCategory: function(category_id) {
 				return this.categories[ category_id ];
-			},
-			toggleCategory: function(logentry, category) {
-				var tmpCategories = logentry.categories;
-				if (tmpCategories[category.category_id]) {
-					delete tmpCategories[category.category_id];
-				}
-				else {
-					tmpCategories[category.category_id] = 1;
-				}
-				debugger;
-				this.$set(this.logentry, 'categories', tmpCategories);
 			}
 		},
 		filters: {
-			formatDatetimeShort: function(value) {
-				return (value ? moment(value).format("DD. MMM YY") : '');
+			formatDateShort: function(value) {
+				return (value ? moment(value).format("DD. MMMM YYYY") : '');
+			},
+			formatTimeShort: function(value) {
+				return (value ? moment(value).format("HH:mm") : '');
 			},
 			formatDatetimeFull: function(value) {
 				return (value ? moment(value).format("dddd, DD.MM.YYYY, HH:mm") : '');
@@ -92,6 +97,7 @@
 				this.$http.get('logentries').then(function (response) {
 					var logentriesReady = response.data.data.map(function(logentry) {
 						logentry.editing = false;
+						logentry.categories = logentry.categories || [];
 						return logentry;
 					});
 
@@ -107,10 +113,15 @@
 						title: '',
 						description: '',
 						author: '',
-						categories: {},
+						categories: [],
 						editing: true
 					});
 			}
-		}
+		},
+		computed: {
+			categorygroups: function() {
+				return _.groupBy(_.sortBy(this.categories, 'title'), 'cgroup');
+			}
+		},
 	});
 })(window);

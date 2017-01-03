@@ -1,0 +1,13 @@
+.description {
+	margin-top: 1em;
+	padding: 5px;
+
+	font-style: italic;
+
+	border: 1px solid #ddd;
+	border-radius: 6px;
+}
+
+.inputDescDiv {
+	padding-top: 1em;
+}
