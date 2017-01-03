@@ -74,7 +74,9 @@ sub GETcategories {
 						SELECT
 							category_id,
 							title,
-							description
+							description,
+							color,
+							cgroup
 						FROM
 							categories
 					},
