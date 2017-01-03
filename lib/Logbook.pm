@@ -16,6 +16,21 @@ sub build {
 		to	=> 'Api#GETlogentries',
 	});
 
+	$routes->add('/logentry' => {
+		via	=> 'POST',
+		to	=> 'Api#POSTnewlogentry',
+	});
+
+	$routes->add('/logentry/:entry_id' => {
+		via	=> 'PUT',
+		to	=> 'Api#PUTupdatelogentry',
+	});
+
+	$routes->add('/logentry/:entry_id' => {
+		via	=> 'DELETE',
+		to	=> 'Api#DELETElogentry',
+	});
+
 	$routes->add('/categories' => {
 		via	=> 'GET',
 		to	=> 'Api#GETcategories',

@@ -81,4 +81,94 @@ sub GETcategories {
 					'category_id');
 }
 
+sub POSTnewlogentry {
+	my ($self) = @_;
+
+	my $params = $self->param;
+
+	my $entry_id = $self->DBinsertEntry({
+			table	=> 'entries',
+			data	=> {
+				edate				=> $params->{ 'edate' },
+				title				=> $params->{ 'title' },
+				description	=> $params->{ 'description' } || undef,
+				author			=> $params->{ 'author' },
+			},
+		});
+
+	foreach my $category_id (@{ $params->{ 'categories' } }) {
+		$self->DBinsertEntry({
+				table	=> 'entry2categories',
+				data	=> {
+					entry_id	=> $entry_id,
+					category_id	=> $category_id,
+				},
+			});
+	}
+
+	return {
+		entry_id	=> $entry_id
+	};
+}
+
+sub PUTupdatelogentry {
+	my ($self, $entry_id) = @_;
+
+	my $dbh = $self->dbconn->dbh;
+	my $params = $self->param;
+
+	$self->DBupdateEntry({
+			table				=> 'entries',
+			whereField	=> 'entry_id',
+			entryID			=> $entry_id,
+			data	=> {
+				edate				=> $params->{ 'edate' },
+				title				=> $params->{ 'title' },
+				description	=> $params->{ 'description' } || undef,
+				author			=> $params->{ 'author' },
+			},
+		});
+
+	{
+		my $catdel_stmt = $dbh->prepare_cached(qq{
+				DELETE FROM
+					entry2categories
+				WHERE
+					entry_id = ?
+			});
+
+		$catdel_stmt->execute($entry_id);
+
+		foreach my $category_id (@{ $params->{ 'categories' } }) {
+			$self->DBinsertEntry({
+					table	=> 'entry2categories',
+					data	=> {
+						entry_id	=> $entry_id,
+						category_id	=> $category_id,
+					},
+				});
+		}
+	}
+}
+
+sub DELETElogentry {
+	my ($self, $entry_id) = @_;
+
+	my $dbh = $self->dbconn->dbh;
+
+	$dbh->do(qq{
+			DELETE FROM
+				entries
+			WHERE
+				entry_id = ?
+		}, undef, $entry_id);
+
+	$dbh->do(qq{
+			DELETE FROM
+				entry2categories
+			WHERE
+				entry_id = ?
+		}, undef, $entry_id);
+}
+
 1;
