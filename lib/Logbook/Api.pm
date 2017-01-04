@@ -23,7 +23,7 @@ sub GETlogentries {
 			WHERE
 				edate BETWEEN ? AND DATE_ADD(?, INTERVAL 1 MONTH)
 			ORDER BY
-				edate
+				edate DESC
 		});
 
 	my $cat_stmt = $dbh->prepare_cached(qq{
