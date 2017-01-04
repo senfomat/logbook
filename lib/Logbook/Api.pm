@@ -151,6 +151,10 @@ sub PUTupdatelogentry {
 				});
 		}
 	}
+
+	return {
+		success	=> $self->jsBool(1),
+	};
 }
 
 sub DELETElogentry {
@@ -171,6 +175,10 @@ sub DELETElogentry {
 			WHERE
 				entry_id = ?
 		}, undef, $entry_id);
+
+	return {
+		success	=> $self->jsBool(1),
+	};
 }
 
 1;

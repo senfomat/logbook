@@ -15,6 +15,20 @@
 			]
 		},
 
+		'Logbook::Database' => {
+			dsn		=> 'DBI:mysql:database=logbook:127.0.0.1:3306;mysql_auto_reconnect=0;',
+			user	=> 'logbook',
+			password	=> 'logbook',
+			arguments	=> {
+				RaiseError	=> 1,
+				PrintError	=> 1,
+				PrintWarn		=> 0,
+				TraceLevel	=> 0,
+				AutoCommit	=> 1,
+				mysql_enable_utf8	=> 1,
+			}
+		},
+
 		'JSON::XS' => {
 			pretty				=> 0,
 			canonical			=> 0,
