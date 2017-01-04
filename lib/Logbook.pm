@@ -8,7 +8,11 @@ sub build {
 	$routes->add('/', sub {
 			my ($self) = @_;
 
-			$self->template('index', $self->config_hash);
+			$self->template('index', {
+					appconfig	=> ${ $self->config_hash }{ 'appconfig' },
+					user		=> $self->req->env->{ 'HTTP_REMOTE_USER' },
+				}
+			);
 		});
 
 	$routes->add('/logentries' => {

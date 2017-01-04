@@ -10,7 +10,15 @@
 <body>
 	<main>
 		<div class="container-fluid">
-			<h3>[% appconfig.title %] - [% appconfig.company %]</h3>
+			<div class="row">
+				<div class="col-sm-6">
+					<h4>[% appconfig.title %] - [% appconfig.company %]</h4>
+				</div>
+				<div class="col-sm-6 text-right">
+					[% IF user %]<h5>Nutzer [% user %] <input type="hidden" id="rusername" value="[% user %]" /></h5>[% END %]
+				</div>
+			</div>
+
 			<div id="v-app">
 				<p class="lead">
 					<button @click="createlogentry()" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>

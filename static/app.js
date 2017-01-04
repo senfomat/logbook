@@ -112,7 +112,7 @@
 						edate: moment().format('YYYY-MM-DD HH:mm:ss'),
 						title: '',
 						description: '',
-						author: '',
+						author: document.getElementById('rusername').value || '',
 						categories: [],
 						editing: true
 					});
