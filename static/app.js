@@ -106,16 +106,31 @@
 					Vue.set(vm, 'pagination', response.data.pagination);
 				});
 			},
-			createlogentry: function() {
-				// Insert Entry at the beginning
-				this.logentries.unshift({
+			createlogentry: function(entryLevel) {
+				var tmpObj = {
 						edate: moment().format('YYYY-MM-DD HH:mm:ss'),
+						author: document.getElementById('rusername').value || '',
 						title: '',
 						description: '',
-						author: document.getElementById('rusername').value || '',
 						categories: [],
 						editing: true
-					});
+					};
+
+				switch (entryLevel) {
+					case 'netzhw':
+						tmpObj.title = 'Austausch Modul/Chassis in GERAETENAME';
+						tmpObj.categories = [8, 45, 30, 37, 38, 39, 44];
+						tmpObj.description = "Typ (alt): XX\nSeriennummer (alt): XX\n\nTyp (neu): YY\nSeriennummer (neu): YY";
+						break;
+					case 'serverhw':
+						tmpObj.title = 'Austausch Serverhardware GERAETENAME';
+						tmpObj.categories = [10, 30];
+						tmpObj.description = 'Alte Hardware: \nNeue Hardware: ';
+						break;
+				}
+
+				// Insert Entry at the beginning
+				this.logentries.unshift(tmpObj);
 			}
 		},
 		computed: {

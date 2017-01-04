@@ -21,7 +21,9 @@
 
 			<div id="v-app">
 				<p class="lead">
-					<button @click="createlogentry()" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>
+					<button @click="createlogentry('')" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>
+					<button @click="createlogentry('netzhw')" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus"></span> Hardwaretausch/Netz</button>
+					<button @click="createlogentry('serverhw')" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus"></span> Hardwaretausch/Server</button>
 				</p>
 				<table class="table table-bordered table-condensed table-hover table-striped">
 					<tr>
