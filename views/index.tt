@@ -10,8 +10,7 @@
 <body>
 	<main>
 		<div class="container-fluid">
-			<h1>[% appconfig.title %]</h1>
-			<h2>[% appconfig.company %]</h2>
+			<div>[% appconfig.title %] - [% appconfig.company %]</div>
 			<div id="v-app">
 				<p class="lead">
 					<button @click="createlogentry()" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>
