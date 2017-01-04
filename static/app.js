@@ -19,7 +19,7 @@
 						function() {
 								var index = that.$parent.logentries.indexOf(logentry);
 								that.$parent.logentries.splice(index, 1);
-								that.$http.delete('/logentry/' + logentry.entry_id);
+								that.$http.delete('logentry/' + logentry.entry_id);
 								alertify.success('Eintrag gelöscht');
 						},
 						function() {
@@ -44,7 +44,7 @@
 				});
 			},
 			updatelogentry: function(logentry) {
-				this.$http.put('/logentry/' + logentry.entry_id, logentry);
+				this.$http.put('logentry/' + logentry.entry_id, logentry);
 				// Set editing to false to show actions again and hide the inputs
 				logentry.editing = false;
 			},
