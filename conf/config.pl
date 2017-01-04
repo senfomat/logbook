@@ -39,6 +39,7 @@
 		},
 
 		'JSON::XS' => {
+			utf8		=> 1,
 			allow_blessed	=> 1,
 		},
 

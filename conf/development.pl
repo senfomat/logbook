@@ -11,6 +11,7 @@
 				PrintWarn		=> 0,
 				TraceLevel	=> 0,
 				AutoCommit	=> 1,
+				mysql_enable_utf8	=> 1,
 			}
 		},
 
