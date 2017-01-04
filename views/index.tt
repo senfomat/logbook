@@ -69,14 +69,14 @@
 					</div>
 				</span>
 			</td>
-			<td class="col-md-2">
+			<td class="col-md-1">
 				<input v-if="logentry.editing" v-model="logentry.author" class="form-control">
 					</input>
 				<span v-else>
 					{{logentry.author}}
 				</span>
 			</td>
-			<td class="col-md-3">
+			<td class="col-md-4">
 				<span v-if="!logentry.editing">
 					<button v-for="category_id in logentry.categories" class="btn btn-default btn-xs">{{ getCategory(category_id).title }}</button>
 				</span>
@@ -91,7 +91,7 @@
 					</tr>
 				</table>
 			</td>
-			<td class="col-md-1">
+			<td class="col-md-1 text-center">
 				<div v-if="logentry.editing">
 					<span v-if="logentry.entry_id" class="btn-group-vertical">
 						<button @click="updatelogentry(logentry)" class="btn btn-success btn-sm">
