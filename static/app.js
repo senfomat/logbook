@@ -109,7 +109,7 @@
 			createlogentry: function(entryLevel) {
 				var tmpObj = {
 						edate: moment().format('YYYY-MM-DD HH:mm:ss'),
-						author: document.getElementById('rusername').value || '',
+						author: (document.getElementById('rusername') ? document.getElementById('rusername').value : ''),
 						title: '',
 						description: '',
 						categories: [],
