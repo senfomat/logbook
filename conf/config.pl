@@ -67,5 +67,30 @@
 	appconfig => {
 		title	=> 'Logbuch',
 		company	=> 'Charité Abt. Netzwerk',
+		buttons	=> [
+			{
+				title	=> 'Neuer Eintrag',
+				css_bs_btn => 'btn-primary',
+				arguments	=> '{}',
+			},
+			{
+				title	=> 'Hardwaretausch/Netz',
+				css_bs_btn => 'btn-info btn-xs',
+				arguments	=> q#{
+					title: 'Austausch Modul/Chassis in GERAETENAME',
+					categories: [8, 45, 30, 37, 38, 39, 44],
+					description: 'Typ (alt): XX\nSeriennummer (alt): XX\n\nTyp (neu): YY\nSeriennummer (neu): YY'
+				}#,
+			},
+			{
+				title	=> 'Hardwaretausch/Server',
+				css_bs_btn => 'btn-info btn-xs',
+				arguments => q#{
+					title: 'Austausch Serverhardware GERAETENAME',
+					categories: [10, 30],
+					description: 'Alte Hardware: \nNeue Hardware: '
+				}#,
+			},
+		],
 	},
 };

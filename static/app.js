@@ -106,7 +106,7 @@
 					Vue.set(vm, 'pagination', response.data.pagination);
 				});
 			},
-			createlogentry: function(entryLevel) {
+			createlogentry: function(predefAttrs) {
 				var tmpObj = {
 						edate: moment().format('YYYY-MM-DD HH:mm:ss'),
 						author: (document.getElementById('rusername') ? document.getElementById('rusername').value : ''),
@@ -116,17 +116,8 @@
 						editing: true
 					};
 
-				switch (entryLevel) {
-					case 'netzhw':
-						tmpObj.title = 'Austausch Modul/Chassis in GERAETENAME';
-						tmpObj.categories = [8, 45, 30, 37, 38, 39, 44];
-						tmpObj.description = "Typ (alt): XX\nSeriennummer (alt): XX\n\nTyp (neu): YY\nSeriennummer (neu): YY";
-						break;
-					case 'serverhw':
-						tmpObj.title = 'Austausch Serverhardware GERAETENAME';
-						tmpObj.categories = [10, 30];
-						tmpObj.description = 'Alte Hardware: \nNeue Hardware: ';
-						break;
+				if (predefAttrs) {
+					_.extend(tmpObj, predefAttrs);
 				}
 
 				// Insert Entry at the beginning

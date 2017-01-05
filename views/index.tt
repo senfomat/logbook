@@ -21,9 +21,14 @@
 
 			<div id="v-app">
 				<p class="lead">
-					<button @click="createlogentry('')" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Neuer Eintrag</button>
-					<button @click="createlogentry('netzhw')" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus"></span> Hardwaretausch/Netz</button>
-					<button @click="createlogentry('serverhw')" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus"></span> Hardwaretausch/Server</button>
+					[% FOREACH button IN appconfig.buttons %]
+						<button
+							@click="createlogentry([% button.arguments %])"
+							class="btn [% button.css_bs_btn %]"
+						>
+							<span class="glyphicon glyphicon-plus"></span> [% button.title %]
+						</button>
+					[% END %]
 				</p>
 				<table class="table table-bordered table-condensed table-hover table-striped">
 					<tr>
