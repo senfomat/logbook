@@ -5,6 +5,35 @@
 
 	moment.locale('de');
 
+	Vue.component('datetime-input', {
+		template: '#template-datetime-input',
+		props: ['value'],
+		methods: {
+			updateValue: function(valTarget, newValue) {
+				var formattedValue;
+
+				switch (valTarget) {
+					case 'date':
+						formattedValue = newValue + this.value.substr(this.value.indexOf(' '));
+						break;
+					case 'time':
+						formattedValue = this.value.substr(0, this.value.indexOf(' ') + 1) + newValue;
+						break;
+				}
+
+				this.$emit('input', formattedValue);
+			}
+		},
+		computed: {
+			cdate: function() {
+				return moment(this.value).format("YYYY-MM-DD");
+			},
+			ctime: function() {
+				return moment(this.value).format("HH:mm");
+			}
+		}
+	});
+
 	Vue.component('logentry', {
 		template: '#template-logentry-raw',
 		props: [

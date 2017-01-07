@@ -11,3 +11,7 @@
 .inputDescDiv {
 	padding-top: 1em;
 }
+
+.inputgroupMW {
+	min-width: 5em;
+}
