@@ -2,14 +2,28 @@ package Logbook::Api;
 
 use common::sense;
 use warnings;
+use DateTime;
 
 sub GETlogentries {
 	my ($self) = @_;
 
 	my $dbh = $self->dbconn->dbh;
 
-	# TBD make an argument
-	my $minDate = '2016-12-24 00:00:00';
+	my $dt;
+
+	if ($self->param('t')) {
+		my ($year, $month) = split('-', $self->param('t'));
+		$dt = DateTime->new(
+				year	=> $year,
+				month	=> $month,
+				day		=> 1,
+			);
+	}
+	else {
+		$dt = DateTime->now->set_day(1);
+	}
+
+	my $minDate = $dt->ymd;
 
 	my $stmt = $dbh->prepare_cached(qq{
 			SELECT
@@ -55,10 +69,13 @@ sub GETlogentries {
 
 	$stmt->finish();
 
+	my $prevMonth = $dt->clone->subtract(months => 1);
+	my $nextMonth = $dt->clone->add(months => 1);
+
 	my $pagination = {
-		today_page_url	=> $minDate,
-		prev_page_url		=> '',
-		next_page_url		=> '',
+		prev_month		=> $prevMonth->ymd,
+		cur_month			=> $minDate,
+		next_month		=> $nextMonth->ymd,
 	};
 
 	return {

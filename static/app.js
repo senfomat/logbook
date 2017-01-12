@@ -121,9 +121,11 @@
 					Vue.set(vm, 'categories', response.data);
 				});
 			},
-			fetchlogentries: function() {
-				var vm = this;
-				this.$http.get('logentries').then(function (response) {
+			fetchlogentries: function(url_date) {
+				var vm = this,
+						page_url = 'logentries' + ( url_date ? '?t=' + url_date : '');
+
+				this.$http.get(page_url).then(function (response) {
 					var logentriesReady = response.data.data.map(function(logentry) {
 						logentry.editing = false;
 						logentry.categories = logentry.categories || [];
@@ -158,5 +160,10 @@
 				return _.groupBy(_.sortBy(this.categories, 'title'), 'cgroup');
 			}
 		},
+		filters: {
+			formatMonthPage: function(value) {
+				return (value ? moment(value).format("MMMM YYYY") : '');
+			},
+		}
 	});
 })(window);

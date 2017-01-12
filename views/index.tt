@@ -30,6 +30,21 @@
 						</button>
 					[% END %]
 				</p>
+				<div class="lead">
+					<span class="col-sm-5 text-right">
+						<button class="btn btn-warning btn-xs btnpaging" @click="fetchlogentries(pagination.prev_month)">
+							&#8678; {{pagination.prev_month | formatMonthPage }}
+						</button>
+					</span>
+					<span class="col-sm-2 text-center">
+						{{pagination.cur_month | formatMonthPage}}
+					</span>
+					<span class="col-sm-5 text-left">
+						<button class="btn btn-warning btn-xs btnpaging" @click="fetchlogentries(pagination.next_month)">
+							{{pagination.next_month | formatMonthPage }} &#8680;
+						</button>
+					</span>
+				<div>
 				<table class="table table-bordered table-condensed table-hover table-striped">
 					<tr>
 						<th>Datum</th>
