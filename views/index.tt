@@ -10,17 +10,18 @@
 <body>
 	<main>
 		<div class="container-fluid">
-			<div class="row">
-				<div class="col-sm-6">
-					<h4>[% appconfig.title %] - [% appconfig.company %]</h4>
-				</div>
-				<div class="col-sm-6 text-right">
-					[% IF user %]<h5>Nutzer [% user %] <input type="hidden" id="rusername" value="[% user %]" /></h5>[% END %]
-				</div>
-			</div>
-
 			<div id="v-app">
-				<p class="lead">
+				<div class="row">
+					<span class="col-sm-6">
+						<h4>[% appconfig.title %] - [% appconfig.company %]</h4>
+					</span>
+					<span class="col-sm-6 text-right">
+						[% IF user %]<h5>Nutzer [% user %] <input type="hidden" id="rusername" value="[% user %]" /></h5>[% END %]
+					</span>
+				</div>
+
+				<div class="row lead">
+					<span class="col-sm-9">
 					[% FOREACH button IN appconfig.buttons %]
 						<button
 							@click="createlogentry([% button.arguments %])"
@@ -29,13 +30,17 @@
 							<span class="glyphicon glyphicon-plus"></span> [% button.title %]
 						</button>
 					[% END %]
-				</p>
-				<div class="lead">
+					</span>
+					<span class="col-sm-3">
+					</span>
+				</div>
+
+				<div class="row lead">
 					<span class="col-sm-12 text-center">
 						<button class="btn btn-warning btn-xs btnpaging" @click="fetchlogentries(pagination.prev_month)">
 							&#8678; {{pagination.prev_month | formatMonthPage }}
 						</button>
-						<button class="btn btn-default btn-xs btnpaging" @click="fetchlogentries(pagination.cur_month)" title="Monat neuladen">
+						<button class="btn btn-default btn-sm btnpaging fontsize80perc" @click="fetchlogentries(pagination.cur_month)" title="Monat neuladen">
 							{{pagination.cur_month | formatMonthPage}} &#10226;
 						</button>
 						<button class="btn btn-warning btn-xs btnpaging" @click="fetchlogentries(pagination.next_month)">
@@ -43,22 +48,23 @@
 						</button>
 					</span>
 				</div>
-				<div>
-				<table class="table table-bordered table-condensed table-hover table-striped">
-					<tr>
-						<th>Datum</th>
-						<th>Eintrag</th>
-						<th>Autor</th>
-						<th>Kategorien</th>
-						<th></th>
-					</tr>
-					<tr v-for="logentry in logentries" is="logentry"
-							:logentry="logentry"
-							:categories="categories"
-							:categorygroups="categorygroups"
-						></tr>
-				</table>
-				[% IF appconfig.devel %]<pre>{{ $data }}</pre> [% END %]
+				<div class="row">
+					<table class="table table-bordered table-condensed table-hover table-striped">
+						<tr>
+							<th>Datum</th>
+							<th>Eintrag</th>
+							<th>Autor</th>
+							<th>Kategorien</th>
+							<th></th>
+						</tr>
+						<tr v-for="logentry in logentries" is="logentry"
+								:logentry="logentry"
+								:categories="categories"
+								:categorygroups="categorygroups"
+							></tr>
+					</table>
+					[% IF appconfig.devel %]<pre>{{ $data }}</pre> [% END %]
+				</div>
 			</div>
 		</div>
 	</main>
@@ -90,12 +96,12 @@
 	<template id="template-logentry-raw">
 		<tr>
 			<td class="col-md-2">
-				<span v-if="!logentry.editing" :title="logentry.edate | formatDatetimeFull">
+				<span v-if="logentry.editing">
+					<datetime-input v-model="logentry.edate"></datetime-input>
+				</span>
+				<span v-else :title="logentry.edate | formatDatetimeFull">
 					{{logentry.edate | formatDateShort }}<br />
 					{{logentry.edate | formatTimeShort }} Uhr
-					</span>
-				<span v-else>
-					<datetime-input v-model="logentry.edate"></datetime-input>
 				</span>
 			</td>
 			<td class="col-md-4">
@@ -121,10 +127,7 @@
 				</span>
 			</td>
 			<td class="col-md-4">
-				<span v-if="!logentry.editing">
-					<button v-for="category_id in logentry.categories" class="btn btn-default btn-xs">{{ getCategory(category_id).title }}</button>
-				</span>
-				<table v-else class="table table-condensed">
+				<table v-if="logentry.editing" class="table table-condensed">
 					<tr v-for="(groupcategories, cgroup) in categorygroups">
 						<td>{{ cgroup }}</td>
 						<td>
@@ -134,6 +137,14 @@
 						</td>
 					</tr>
 				</table>
+				<span v-else>
+					<button
+							v-for="category_id in logentry.categories"
+							class="btn btn-default btn-xs"
+						>
+						{{ getCategory(category_id).title }}
+					</button>
+				</span>
 			</td>
 			<td class="col-md-1 text-center">
 				<div v-if="logentry.editing">
