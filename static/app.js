@@ -88,6 +88,18 @@
 			},
 			getCategory: function(category_id) {
 				return this.categories[ category_id ];
+			},
+			addToFilter: function(category_id) {
+				var filterStr = 'cat:' + this.getCategory(category_id).title;
+
+				if (this.$parent.searchValue.length > 0) {
+					this.$parent.searchValue += ' ' + filterStr;
+				}
+				else {
+					this.$parent.searchValue = filterStr;
+				}
+
+				this.$parent.fetchlogentries();
 			}
 		},
 		filters: {
@@ -108,7 +120,8 @@
 		data: {
 			categories: {},
 			pagination: {},
-			logentries: []
+			logentries: [],
+			searchValue: ''
 		},
 		mounted: function() {
 			this.fetchCategories();
@@ -123,9 +136,20 @@
 			},
 			fetchlogentries: function(url_date) {
 				var vm = this,
-						page_url = 'logentries' + ( url_date ? '?t=' + url_date : '');
+						urlParameters = [];
 
-				this.$http.get(page_url).then(function (response) {
+				if (url_date) {
+					urlParameters.push('t=' + encodeURIComponent(url_date));
+				}
+				else if (this.pagination && this.pagination.cur_month) {
+					urlParameters.push('t=' + encodeURIComponent(this.pagination.cur_month));
+				}
+
+				if (this.searchValue.length) {
+					urlParameters.push('q=' + encodeURIComponent(this.searchValue));
+				}
+
+				this.$http.get('logentries?' + urlParameters.join('&')).then(function (response) {
 					var logentriesReady = response.data.data.map(function(logentry) {
 						logentry.editing = false;
 						logentry.categories = logentry.categories || [];
@@ -153,6 +177,10 @@
 
 				// Insert Entry at the beginning
 				this.logentries.unshift(tmpObj);
+			},
+			clearSearchinput: function() {
+				this.searchValue = '';
+				this.fetchlogentries();
 			}
 		},
 		computed: {

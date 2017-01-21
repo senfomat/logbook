@@ -4,41 +4,92 @@ use common::sense;
 use warnings;
 use DateTime;
 
+use DBI qw(:sql_types);
+use Text::ParseWords;
+
 sub GETlogentries {
 	my ($self) = @_;
 
 	my $dbh = $self->dbconn->dbh;
 
-	my $dt;
+	my $dts;
 
-	if ($self->param('t')) {
-		my ($year, $month) = split('-', $self->param('t'));
-		$dt = DateTime->new(
-				year	=> $year,
-				month	=> $month,
-				day		=> 1,
-			);
+	# Start-Timestamp either in http-Param 't' or the current month
+	{
+		if ($self->param('t')) {
+			my ($year, $month) = split('-', $self->param('t'));
+			$dts = DateTime->new(
+					year	=> $year,
+					month	=> $month,
+					day		=> 1,
+				);
+		}
+		else {
+			$dts = DateTime->now->set_day(1);
+		}
+	}
+
+	my $dte;
+
+	# End-Timestamp either in http-Param 'e' or the next month
+	{
+		if ($self->param('e')) {
+			my ($year, $month) = split('-', $self->param('e'));
+			$dte = DateTime->new(
+					year	=> $year,
+					month	=> $month,
+					day		=> 1,
+				);
+		}
+		else {
+			$dte = $dts->clone->add(months => 1);
+		}
+	}
+
+	my $stmt;
+
+	if ($self->param('q')) {
+		my $whereStatement = _generateSearchWhere($self->param('q'), $dbh);
+
+		$stmt = $dbh->prepare(qq{
+				SELECT
+					DISTINCT(entry_id),
+					edate,
+					title,
+					description,
+					author
+				FROM
+					entries
+				LEFT JOIN entry2categories USING (entry_id)
+				WHERE
+					edate BETWEEN ? AND ?
+					$whereStatement
+				ORDER BY
+					edate DESC
+			});
+
+		$stmt->bind_param(1, $dts->ymd, SQL_DATETIME);
+		$stmt->bind_param(2, $dte->ymd, SQL_DATETIME);
 	}
 	else {
-		$dt = DateTime->now->set_day(1);
+		$stmt = $dbh->prepare_cached(q{
+				SELECT
+					entry_id,
+					edate,
+					title,
+					description,
+					author
+				FROM
+					entries
+				WHERE
+					edate BETWEEN ? AND ?
+				ORDER BY
+					edate DESC
+			});
+
+		$stmt->bind_param(1, $dts->ymd, SQL_DATETIME);
+		$stmt->bind_param(2, $dte->ymd, SQL_DATETIME);
 	}
-
-	my $minDate = $dt->ymd;
-
-	my $stmt = $dbh->prepare_cached(qq{
-			SELECT
-				entry_id,
-				edate,
-				title,
-				description,
-				author
-			FROM
-				entries
-			WHERE
-				edate BETWEEN ? AND DATE_ADD(?, INTERVAL 1 MONTH)
-			ORDER BY
-				edate DESC
-		});
 
 	my $cat_stmt = $dbh->prepare_cached(qq{
 			SELECT
@@ -49,8 +100,6 @@ sub GETlogentries {
 				entry2categories.entry_id = ?
 		});
 
-	$stmt->bind_param(1, $minDate);
-	$stmt->bind_param(2, $minDate);
 	$stmt->execute();
 
 	my @entries;
@@ -69,12 +118,12 @@ sub GETlogentries {
 
 	$stmt->finish();
 
-	my $prevMonth = $dt->clone->subtract(months => 1);
-	my $nextMonth = $dt->clone->add(months => 1);
+	my $prevMonth = $dts->clone->subtract(months => 1);
+	my $nextMonth = $dts->clone->add(months => 1);
 
 	my $pagination = {
 		prev_month		=> $prevMonth->ymd,
-		cur_month			=> $minDate,
+		cur_month			=> $dts->ymd,
 		next_month		=> $nextMonth->ymd,
 	};
 
@@ -196,6 +245,63 @@ sub DELETElogentry {
 	return {
 		success	=> $self->jsBool(1),
 	};
+}
+
+sub _generateSearchWhere {
+	my ($qparam, $dbh) = @_;
+
+	my @textArr;
+	my @catnameArr;
+
+	foreach my $word (shellwords($qparam)) {
+		if ($word =~ m/^cat:(.+)$/) {
+			push @catnameArr, $1;
+		}
+		else {
+			$word =~ s/(?=[\\%_])/\\/g;
+
+			push @textArr, qq{title LIKE "%$word%"};
+			push @textArr, qq{description LIKE "%$word%"};
+		}
+	}
+
+	my @categoriesArray;
+
+	# Resolve Catnames to category-id
+	{
+		my $cat_stmt = $dbh->prepare_cached(q{
+				SELECT
+					category_id
+				FROM
+					categories
+				WHERE
+					title = ?
+			});
+
+		my $categoriesHash;
+
+		foreach my $catName (@catnameArr) {
+			$cat_stmt->execute($catName);
+
+			while(my ($category_id) = $cat_stmt->fetchrow_array) {
+				$categoriesHash->{ $category_id } = 1;
+			}
+
+			$cat_stmt->finish();
+		}
+
+		@categoriesArray = map { "category_id = $_" } keys %$categoriesHash;
+	}
+
+	my $retStr = '';
+	if (scalar(@categoriesArray)) {
+		$retStr .= ' AND (' . join(' OR ', @categoriesArray) . ')';
+	}
+	if (scalar(@textArr)) {
+		$retStr .= ' AND (' . join(' OR ', @textArr) . ')';
+	}
+
+	return $retStr;
 }
 
 1;

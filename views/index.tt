@@ -32,6 +32,17 @@
 					[% END %]
 					</span>
 					<span class="col-sm-3">
+						<span class="input-group">
+							<input
+									class="form-control"
+									type="text"
+									placeholder="Suchbegriff(e)..."
+									@keyup.enter="fetchlogentries()"
+									v-model.trim="searchValue"
+								/>
+							<span v-if="searchValue.length" class="input-group-addon" title="Filter entfernen"><span class="glyphicon glyphicon-remove" @click="clearSearchinput()"></span></span>
+							<span class="input-group-addon"><span class="glyphicon glyphicon-search" @click="fetchlogentries()"></span></span>
+						</span>
 					</span>
 				</div>
 
@@ -141,6 +152,7 @@
 					<button
 							v-for="category_id in logentry.categories"
 							class="btn btn-default btn-xs"
+							@click="addToFilter(category_id)"
 						>
 						{{ getCategory(category_id).title }}
 					</button>
