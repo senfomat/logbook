@@ -127,10 +127,24 @@
 		},
 		watch: {
 			infotext: function (val) {
-				alertify.notify(val);
+				if (_.isArray(val)) {
+					_.each(val, function(message) {
+							alertify.notify(message);
+						});
+				}
+				else {
+					alertify.notify(val);
+				}
 			},
 			errortext: function(val) {
-				alertify.error(val);
+				if (_.isArray(val)) {
+					_.each(val, function(message) {
+							alertify.error(message);
+						});
+				}
+				else {
+					alertify.error(val);
+				}
 			}
 		},
 		mounted: function() {
