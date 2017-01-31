@@ -118,10 +118,20 @@
 	exports.app = new Vue({
 		el: '#v-app',
 		data: {
+			infotext: undefined,
+			errortext: undefined,
 			categories: {},
 			pagination: {},
 			logentries: [],
 			searchValue: ''
+		},
+		watch: {
+			infotext: function (val) {
+				alertify.notify(val);
+			},
+			errortext: function(val) {
+				alertify.error(val);
+			}
 		},
 		mounted: function() {
 			this.fetchCategories();
@@ -159,6 +169,8 @@
 					// Poplulate logentries-data in Application
 					Vue.set(vm, 'logentries', logentriesReady);
 					Vue.set(vm, 'pagination', response.data.pagination);
+					Vue.set(vm, 'infotext', response.data.infotext);
+					Vue.set(vm, 'errortext', response.data.errortext);
 				});
 			},
 			createlogentry: function(predefAttrs) {
