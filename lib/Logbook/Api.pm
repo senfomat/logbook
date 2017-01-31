@@ -11,6 +11,7 @@ sub GETlogentries {
 	my ($self) = @_;
 
 	my $dbh = $self->dbconn->dbh;
+	my $retHash = {};
 
 	my $dts;
 
@@ -46,21 +47,49 @@ sub GETlogentries {
 		}
 	}
 
-	my $stmt;
+	my $entriesArray;
 
 	if ($self->param('q')) {
-		my $whereStatement = _generateSearchWhere($self->param('q'), $dbh);
+		my $conditions = _generateSearchWhere($self->param('q'), $dbh);
 
-		$stmt = $dbh->prepare(qq{
+		if (exists $conditions->{ 'error' }) {
+			push @{ $retHash->{ 'errortext' } }, @{ $conditions->{ 'error' } };
+		}
+
+		my $whereStatement = '';
+
+		# Fetch list of entry_id's when category-filters are given
+		if (exists $conditions->{ 'categories' }) {
+			# TODO: beautify sql, very quirky (group by with dynamic count, brr)
+			my $tmpHash = $dbh->selectall_hashref(q{
+						SELECT
+							entry_id
+						FROM
+							entry2categories
+						WHERE
+							category_id IN (} . join(',', @{ $conditions->{ 'categories' } }) . q{)
+						GROUP BY entry_id HAVING COUNT(*) > } . (scalar(@{ $conditions->{ 'categories' } }) - 1),
+					'entry_id'
+				);
+
+			if (scalar(keys %$tmpHash)) {
+				$whereStatement .= ' AND entry_id IN (' . join(',', keys %$tmpHash) . ') ';
+			}
+		}
+
+		if (exists $conditions->{ 'textfilter' }) {
+			$whereStatement .= ' AND (' . join(' OR ', @{  $conditions->{ 'textfilter' } }) . ')';
+		}
+
+		my $stmt = $dbh->prepare(qq{
 				SELECT
-					DISTINCT(entry_id),
+					entry_id,
 					edate,
 					title,
 					description,
 					author
 				FROM
 					entries
-				LEFT JOIN entry2categories USING (entry_id)
 				WHERE
 					edate BETWEEN ? AND ?
 					$whereStatement
@@ -70,9 +99,12 @@ sub GETlogentries {
 
 		$stmt->bind_param(1, $dts->ymd, SQL_DATETIME);
 		$stmt->bind_param(2, $dte->ymd, SQL_DATETIME);
+		$stmt->execute();
+
+		$entriesArray = $stmt->fetchall_arrayref({});
 	}
 	else {
-		$stmt = $dbh->prepare_cached(q{
+		my $stmt = $dbh->prepare_cached(q{
 				SELECT
 					entry_id,
 					edate,
@@ -89,6 +121,9 @@ sub GETlogentries {
 
 		$stmt->bind_param(1, $dts->ymd, SQL_DATETIME);
 		$stmt->bind_param(2, $dte->ymd, SQL_DATETIME);
+		$stmt->execute();
+
+		$entriesArray = $stmt->fetchall_arrayref({});
 	}
 
 	my $cat_stmt = $dbh->prepare_cached(qq{
@@ -97,40 +132,29 @@ sub GETlogentries {
 			FROM
 				entry2categories
 			WHERE
-				entry2categories.entry_id = ?
+				entry_id = ?
 		});
 
-	$stmt->execute();
-
-	my @entries;
-
-	while(my $tmpHash = $stmt->fetchrow_hashref) {
-		$cat_stmt->execute($tmpHash->{ 'entry_id' });
+	foreach my $entry (@$entriesArray) {
+		$cat_stmt->execute($entry->{ 'entry_id' });
 
 		while(my ($category_id) = $cat_stmt->fetchrow_array) {
-			push @{ $tmpHash->{ 'categories' } }, $category_id;
+			push @{ $entry->{ 'categories' } }, $category_id;
 		}
-
-		$cat_stmt->finish();
-
-		push @entries, $tmpHash;
 	}
 
-	$stmt->finish();
+	$retHash->{ 'data' } = $entriesArray;
 
 	my $prevMonth = $dts->clone->subtract(months => 1);
 	my $nextMonth = $dts->clone->add(months => 1);
 
-	my $pagination = {
+	$retHash->{ 'pagination' } = {
 		prev_month		=> $prevMonth->ymd,
 		cur_month			=> $dts->ymd,
 		next_month		=> $nextMonth->ymd,
 	};
 
-	return {
-		data				=> \@entries,
-		pagination	=> $pagination,
-	};
+	return $retHash;
 }
 
 sub GETcategories {
@@ -252,6 +276,7 @@ sub _generateSearchWhere {
 
 	my @textArr;
 	my @catnameArr;
+	my $retHash = {};
 
 	foreach my $word (shellwords($qparam)) {
 		if ($word =~ m/^cat:(.+)$/) {
@@ -283,25 +308,29 @@ sub _generateSearchWhere {
 		foreach my $catName (@catnameArr) {
 			$cat_stmt->execute($catName);
 
+			my $found = 0;
+
 			while(my ($category_id) = $cat_stmt->fetchrow_array) {
 				$categoriesHash->{ $category_id } = 1;
+				$found = 1;
 			}
 
-			$cat_stmt->finish();
+			if (!$found) {
+				push @{ $retHash->{ 'error' } }, qq{Kategorie "$catName" nicht gefunden!};
+			}
 		}
 
-		@categoriesArray = map { "category_id = $_" } keys %$categoriesHash;
+		@categoriesArray = keys %$categoriesHash;
 	}
 
-	my $retStr = '';
 	if (scalar(@categoriesArray)) {
-		$retStr .= ' AND (' . join(' OR ', @categoriesArray) . ')';
+		$retHash->{ 'categories' } = \@categoriesArray;
 	}
 	if (scalar(@textArr)) {
-		$retStr .= ' AND (' . join(' OR ', @textArr) . ')';
+		$retHash->{ 'textfilter' } = \@textArr;
 	}
 
-	return $retStr;
+	return $retHash;
 }
 
 1;
