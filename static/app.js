@@ -1,4 +1,4 @@
-/*global Vue, _ */
+/*global Vue, _, axios */
 
 (function(exports) {
 	'use strict';
@@ -60,7 +60,7 @@
 				logentry.editing = true;
 			},
 			createlogentry: function(logentry) {
-				this.$http.post('logentry', logentry).then(function (response) {
+				axios.post('logentry', logentry).then(function (response) {
 					/*
 						After the the new logentry is stored in the database fetch again all logentries with
 						vm.fetchlogentries();
@@ -73,7 +73,7 @@
 				});
 			},
 			updatelogentry: function(logentry) {
-				this.$http.put('logentry/' + logentry.entry_id, logentry);
+				axios.put('logentry/' + logentry.entry_id, logentry);
 				// Set editing to false to show actions again and hide the inputs
 				logentry.editing = false;
 			},
@@ -154,7 +154,7 @@
 		methods: {
 			fetchCategories: function() {
 				var vm = this;
-				this.$http.get('categories').then(function(response) {
+				axios.get('categories').then(function(response) {
 					Vue.set(vm, 'categories', response.data);
 				});
 			},
@@ -173,7 +173,7 @@
 					urlParameters.push('q=' + encodeURIComponent(this.searchValue));
 				}
 
-				this.$http.get('logentries?' + urlParameters.join('&')).then(function (response) {
+				axios.get('logentries?' + urlParameters.join('&')).then(function (response) {
 					var logentriesReady = response.data.data.map(function(logentry) {
 						logentry.editing = false;
 						logentry.categories = logentry.categories || [];

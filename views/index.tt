@@ -188,7 +188,7 @@
 	</template>
 
 	<script src="components/vue/dist/vue.js"></script>
-	<script src="components/vue-resource/dist/vue-resource.js"></script>
+	<script src="components/axios/dist/axios.min.js"></script>
 	<script src="components/moment/min/moment-with-locales.min.js"></script>
 	<script src="components/underscore/underscore-min.js"></script>
 	<script src="components/alertify-js/build/alertify.min.js"></script>
