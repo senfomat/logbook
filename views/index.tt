@@ -120,14 +120,12 @@
 					<input v-model="logentry.title" class="form-control" id="inputTitle"></input>
 					<div class="inputDescDiv">
 						<label for="inputTextareaDesc">Beschreibung (optional)</label>
-						<textarea v-if="logentry.editing" v-model="logentry.description" id="inputTextareaDesc" class="form-control" rows="10"></textarea>
+						<textarea v-if="logentry.editing" v-model.trim="logentry.description" id="inputTextareaDesc" class="form-control" rows="10"></textarea>
 					</div>
 				</div>
 				<span v-else>
 					<div>{{logentry.title}}</div>
-					<div class="description" v-if="logentry.description">
-						{{logentry.description}}
-					</div>
+					<div class="description" v-if="logentry.description">{{logentry.description}}</div>
 				</span>
 			</td>
 			<td class="col-md-1">
