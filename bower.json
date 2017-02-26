@@ -11,7 +11,7 @@
   "dependencies": {
     "bootstrap": "^3.3.7",
     "moment": "^2.17.1",
-    "vue": "^2.1.10",
+    "vue": "^2.2.0",
     "alertify-js": "^1.8.0",
     "underscore": "^1.8.3",
     "axios": "^0.15.3"
