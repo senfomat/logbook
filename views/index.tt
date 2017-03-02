@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -6,6 +7,7 @@
 	<link rel="stylesheet" href="components/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="components/alertify-js/build/css/alertify.min.css">
 	<link rel="stylesheet" href="static/logbook.css">
+	[% USE JSON %]
 </head>
 <body>
 	<main>
@@ -24,7 +26,7 @@
 					<span class="col-sm-9">
 					[% FOREACH button IN appconfig.buttons %]
 						<button
-							@click="createlogentry([% button.arguments %])"
+							@click='createlogentry([% button.arguments.json %])'
 							class="btn [% button.css_bs_btn %]"
 						>
 							<span class="glyphicon glyphicon-plus"></span> [% button.title %]
@@ -80,7 +82,7 @@
 		</div>
 	</main>
 
-	<template id="template-datetime-input">
+	<script type="x/templates" id="template-datetime-input">
 		<span>
 			<div class="input-group">
 				<span class="input-group-addon inputgroupMW">Datum</span>
@@ -100,11 +102,11 @@
 						:value="ctime"
 						@input="updateValue('time', $event.target.value)"
 					/>
-			</span>
-		</div>
-	</template>
+			</div>
+		</span>
+	</script>
 
-	<template id="template-logentry-raw">
+	<script type="x/templates" id="template-logentry-raw">
 		<tr>
 			<td class="col-md-2">
 				<span v-if="logentry.editing">
@@ -183,8 +185,9 @@
 				</div>
 			</td>
 		</tr>
-	</template>
+	</script>
 
+	<script src="components/es6-promise/es6-promise.auto.min.js"></script>
 	<script src="components/vue/dist/vue.js"></script>
 	<script src="components/axios/dist/axios.min.js"></script>
 	<script src="components/moment/min/moment-with-locales.min.js"></script>
